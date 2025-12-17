@@ -1,0 +1,28 @@
+name: Build Windows EXE
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install deps
+        run: npm ci
+      - name: Build (Windows)
+        run: npm run dist
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cunli-faqiang-windows-dist
+          path: |
+            dist/*.exe
+            dist/*.zip
+            dist/latest.yml
