@@ -1,0 +1,28 @@
+name   名字: Build Windows EXE
+
+on:   :
+  workflow_dispatch:
+  push:   推动:
+    branches: [ "main" ]   分支：["main"]
+
+jobs:   工作:
+  build-win:
+    runs-on: windows-latest   上运行:windows-latest
+    steps:   步骤:
+      - uses: actions/checkout@v4-使用：actions/checkout@v4
+      - uses: actions/setup-node@v4-使用：actions/setup-node@v4
+        with:   :
+          node-version: "20"   节点信息:“20”
+          cache: "npm"   缓存:“崇拜”
+      - name: Install deps   —name：安装deps
+        run: npm ci   运行：npm ci
+      - name: Build (Windows)   -名称：Build （Windows）
+        run: npm run dist   运行：NPM运行目录
+      - name: Upload artifacts   —name：上传工件
+        uses: actions/upload-artifact@v4用途:行动/ upload-artifact@v4
+        with:   :
+          name: cunli-faqiang-windows-dist名称:cunli-faqiang-windows-dist
+          path: |   路径:|
+            dist/*.exe
+            dist/*.zip
+            dist/latest.yml
