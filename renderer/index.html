@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>村里发枪了 - 提示词助手（桌面版）</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="title">村里发枪了</div>
+      <div class="sub">提示词助手（桌面版） · <span id="ver">v?</span></div>
+    </header>
+
+    <section class="panel">
+      <textarea id="promptBox" placeholder="在这里写/拼你的提示词…"></textarea>
+
+      <div class="row">
+        <button id="btnCopy" class="btn primary">复制</button>
+        <button id="btnClear" class="btn danger">清空</button>
+        <div class="spacer"></div>
+        <label class="toggle"><input type="checkbox" id="toggleNewline" /> 换行拼接</label>
+      </div>
+
+      <div id="toast" class="toast" aria-live="polite"></div>
+    </section>
+
+    <section class="library">
+      <div class="libHead">
+        <div class="libTitle">焚决</div>
+        <div class="libActions">
+          <input id="search" class="search" placeholder="搜索按钮名/内容…" />
+          <button id="btnImport" class="btn ghost">导入</button>
+          <button id="btnExport" class="btn ghost">导出</button>
+          <button id="btnReveal" class="btn ghost">打开库位置</button>
+          <button id="btnReset" class="btn ghost">重置</button>
+        </div>
+      </div>
+
+      <div id="groups" class="groups"></div>
+    </section>
+
+    <footer class="foot">
+      <div>提示：库文件会保存到本机应用数据目录（可点“打开库位置”查看/备份）。导入/导出是为了同步到别的电脑。</div>
+    </footer>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

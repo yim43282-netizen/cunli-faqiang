@@ -1,0 +1,372 @@
+// 村里发枪了 - 提示词助手（网页版）
+// 数据结构兼容你的 keywords.json：
+// [ { name: '分组名', keywords: [{label:'按钮名', value:'提示词'}] } ]
+
+const STORAGE_KEY = "cunli_prompt_library_v1";
+
+const DEFAULT_LIBRARY = [
+  {
+    "name": "banana2增强",
+    "keywords": [
+      {
+        "label": "一键超清✨",
+        "value": "一键超清✨，整体清晰度提升，细节更锐利但不假，不涂抹。"
+      },
+      {
+        "label": "高清放大",
+        "value": "高清放大，高清放大，保持原构图与细节比例不变，边缘不糊不虚。"
+      },
+      {
+        "label": "质感增强",
+        "value": "质感增强，材质质感增强：表面微纹理、真实反射与粗糙度层次。"
+      },
+      {
+        "label": "细节强化",
+        "value": "细节强化，细节强化：针脚/织纹/毛孔/细小磨损更清楚，细节真实不过度锐化。"
+      },
+      {
+        "label": "超写实",
+        "value": "超写实，超写实、照片级真实，去除3D模型感与塑料感。"
+      },
+      {
+        "label": "照片级精度",
+        "value": "照片级精度，照片级精度，真实镜头成像质感，细节自然不过分“渲染感”。"
+      },
+      {
+        "label": "降噪保细节",
+        "value": "降噪保细节，降噪但保留纹理细节；不要磨皮，不要涂抹感。"
+      },
+      {
+        "label": "HDR细节",
+        "value": "HDR细节，HDR细节：暗部有层次不过黑，高光不过曝，质感更饱满。"
+      },
+      {
+        "label": "微纹理",
+        "value": "微纹理，增加微纹理：织物纹理、皮革纹理、橡胶微颗粒、金属拉丝。"
+      },
+      {
+        "label": "真实皮肤",
+        "value": "真实皮肤，真实皮肤：毛孔、皮脂微反光、细小绒毛与肤色层次自然。"
+      },
+      {
+        "label": "干净边缘",
+        "value": "干净边缘，边缘干净利落，轮廓不糊不毛边，不产生锯齿或涂抹。"
+      }
+    ]
+  },
+  {
+    "name": "组合",
+    "keywords": [
+      {
+        "label": "锁人不变 + 换背景",
+        "value": "锁人不变 + 换背景。只替换背景；人物外观/动作/服装/道具/打光/颜色全部不变；背景与人物透视一致，不割裂。"
+      },
+      {
+        "label": "锁人不变 + 换氛围（只改调性不改物体）",
+        "value": "锁人不变 + 换氛围（只改调性不改物体），人物完全不变；只调整整体氛围与环境质感；保持原有构图与光比；不要改变任何道具形状。"
+      },
+      {
+        "label": "只改动作（不新增道具）",
+        "value": "只改动作（不新增道具），只替换动作与姿态；不新增道具；不改变人物脸/发型/服装细节；保持原画风与打光。"
+      },
+      {
+        "label": "只改材质质感（颜色打光不动）",
+        "value": "只改材质质感（颜色打光不动），保持颜色与打光不变；只提升材质与质感细节（织物纹理/针脚/微褶皱/磨损）；不改造型。"
+      },
+      {
+        "label": "替换道具（不改动作）",
+        "value": "替换道具（不改动作），保持人物动作与表情不变；仅把手持物替换为【高级硬壳文件夹/医院病例板+病例纸】；不新增其他道具。"
+      },
+      {
+        "label": "修透视（背景别夸张）",
+        "value": "修透视（背景别夸张），修正背景透视：中焦视角，轻透视；不要广角夸张纵深；背景比例与人物一致，空间真实。"
+      }
+    ]
+  },
+  {
+    "name": "预设",
+    "keywords": [
+      {
+        "label": "冷色“暗区突围 / 逃离塔科夫”氛围",
+        "value": "冷色“暗区突围 / 逃离塔科夫”氛围，冷色、低饱和、硬朗写实氛围，紧张克制；金属与混凝土质感清晰，空气微尘，电影级真实。"
+      },
+      {
+        "label": "电影级超写实",
+        "value": "电影级超写实，电影级超写实，照片级精度；真实皮肤与毛发；材质真实可触；无CG塑料感。"
+      },
+      {
+        "label": "2/3身体固定构图（你最常用）",
+        "value": "2/3身体固定构图（你最常用），2/3身体构图：从头顶到大腿中段；画面下沿切在大腿中部；不要全身，不要脚。"
+      }
+    ]
+  },
+  {
+    "name": "摄影",
+    "keywords": [
+      {
+        "label": "电影级布光（但别改原打光时用）",
+        "value": "电影级布光（但别改原打光时用），电影级布光：主光+柔和补光+轮廓光；对比克制，层次清晰；皮肤与织物质感被照亮。"
+      },
+      {
+        "label": "保持原图打光与颜色不变",
+        "value": "保持原图打光与颜色不变，保持原图打光与颜色完全不变；只做细节与材质提升；不改变光比与色温。"
+      },
+      {
+        "label": "镜头质感（去渲染味）",
+        "value": "镜头质感（去渲染味），真实镜头成像：轻微景深、自然锐度与微颗粒；避免CG渲染质感。"
+      }
+    ]
+  },
+  {
+    "name": "替换类",
+    "keywords": [
+      {
+        "label": "只换脸型/头部轮廓",
+        "value": "只换脸型/头部轮廓，以图1为主图，保持图1的写实质感、打光、颜色、相机视角、构图、动作完全不变。仅将“脸型边缘/下颌线/颧骨转折/头部轮廓”调整为图2的特征；保持图1的皮肤毛孔与真实质感不变，不要变成塑料感。不改变发型长度与走向，不改变表情强度，不新增道具，不改变背景。"
+      },
+      {
+        "label": "只换眼睛",
+        "value": "只换眼睛，保持图1人物整体不变：材质、打光、颜色、脸部细节、发丝细节不变。仅将“眼球大小、虹膜颜色、眼白比例、眼裂形状、眼神方向”匹配图2；眼神，自然真实，不夸张。不改变其他五官比例；不改变镜片反光与光源方向；不新增妆容。"
+      },
+      {
+        "label": "只换动作",
+        "value": "只换动作，保持图1人物外观、服装、材质、颜色、打光、背景完全不变。仅将“肢体动作/手臂角度/手势/肩颈姿态”替换为图2的动作；动作自然、写实、四肢比例正确。不新增任何道具；不改变镜头焦段与视角；不改变表情年龄。"
+      },
+      {
+        "label": "只换背景",
+        "value": "只换背景，保持图1人物100%不变（脸、头发、衣服、动作、材质、颜色、打光全部锁定）。将背景替换为图2背景的医院环境风格；背景写实、比例正确、透视弱（中长焦感），与人物透视一致；人物与背景接触光、环境反射、边缘遮罩自然融合，不割裂。禁止广角、禁止夸张纵深、禁止地面透视过大；不改变图1主光方向与色温。"
+      },
+      {
+        "label": "只换氛围/色调",
+        "value": "只换氛围/色调，以图2为主图，保持图2的打光结构与曝光不变。仅将整体氛围替换为图1的冷色、压抑、暗区突围/逃离塔科夫式调性：偏冷青蓝、对比更凝、空气微雾、金属与墙面更“湿冷”。不改变图2人物与背景结构，不改变透视与构图，不新增灯具或道具。"
+      }
+    ]
+  },
+  {
+    "name": "通用材质增强模板",
+    "keywords": [
+      {
+        "label": "皮肤超写实（毛孔/汗毛/SSS）",
+        "value": "皮肤超写实（毛孔/汗毛/SSS），保持颜色与打光不变，只提升皮肤照片级真实：可见毛孔、细小汗毛(桃绒)、真实皮脂高光、微血色不均、轻微瑕疵与肤理起伏；自然次表面散射(SSS)，不要磨皮、不要蜡像感、不要塑料感。"
+      },
+      {
+        "label": "头发超写实",
+        "value": "头发超写实，保持发型轮廓不变，只提升头发真实度：清晰发丝束、粗细变化、发根密度与头皮阴影、细碎飞发、轻微毛躁与静电；真实各向异性高光，不要成片塑料亮带，不要糊成团。"
+      },
+      {
+        "label": "布料超写实",
+        "value": "布料超写实，保持颜色打光不变，只提升布料真实：可见细密织纹/斜纹纹理、线迹与压线、缝边与翻折厚度正确；褶皱遵循重力与拉扯，褶皱边缘柔和过渡；加入轻微磨毛、起球与使用痕迹，避免“硬雕刻褶皱/模型感”。"
+      },
+      {
+        "label": "皮革超写实",
+        "value": "皮革超写实，保持颜色不变，只提升皮革真实：细腻皮纹毛孔、拉伸处发亮、压痕与折线、边缘轻微磨损与起皮；缝线与走线真实，皮面微反光但不过曝，不要橡胶感、不规则纹理更自然。"
+      },
+      {
+        "label": "金属超写实",
+        "value": "金属超写实，保持颜色打光不变，只提升金属PBR真实：微拉丝/喷砂粗糙度变化、细小划痕、边角高光、指纹油污、轻微磨损；高光锐利但不过度镜面，不要像塑料喷漆。"
+      },
+      {
+        "label": "胶/乳胶手套超写实",
+        "value": "胶/乳胶手套超写实，保持手套颜色不变，只增强胶制/乳胶质感：紧绷拉伸的细褶、关节处真实压痕、局部高光更集中、轻微粉感/摩擦雾面区、手指形变真实；不要“皮手套纹理”、不要过度均匀的亮面。"
+      },
+      {
+        "label": "尼龙织带/腰带超写实",
+        "value": "尼龙织带/腰带超写实，保持颜色不变，只增强尼龙织带真实：可见织带编织纹理、缝线加固、边缘包边与轻微毛边；受力处微拉伸与压痕；扣具处磨损与反光真实，不要像光滑塑料带。"
+      },
+      {
+        "label": "尼龙丝袜/连裤袜超写实",
+        "value": "尼龙丝袜/连裤袜超写实，保持颜色打光不变，只提升丝袜真实：细微编织网格与轻薄透肤、受力处微反光、膝/大腿处轻微拉伸变化；避免重复花纹与摩尔纹；不要“硬涂黑”、不要塑料亮膜感。"
+      },
+      {
+        "label": "消除模型感褶皱",
+        "value": "消除模型感褶皱，褶皱必须像真实照片：软、随机、不规则、边缘有柔和过渡；避免硬边雕刻感、避免对称规律、避免过度锐化与均匀噪点；加入真实使用压痕与面料疲劳感。"
+      }
+    ]
+  },
+  {
+    "name": "通用反向词",
+    "keywords": [
+      {
+        "label": "反向词",
+        "value": "卡通, 二次元, 低模, 塑料感, 蜡像感, 过度磨皮, 过度锐化, 雕刻褶皱, 规则对称褶皱, 广角畸变, 透视过大, 夸张纵深, 变形, 肢体畸形, 多余道具, 多余文字水印, 噪点糊, 涂抹感"
+      }
+    ]
+  }
+];
+
+const els = {
+  promptBox: document.getElementById("promptBox"),
+  btnCopy: document.getElementById("btnCopy"),
+  btnClear: document.getElementById("btnClear"),
+  toggleNewline: document.getElementById("toggleNewline"),
+  groups: document.getElementById("groups"),
+  toast: document.getElementById("toast"),
+  search: document.getElementById("search"),
+  fileImport: document.getElementById("fileImport"),
+  btnExport: document.getElementById("btnExport"),
+  btnReset: document.getElementById("btnReset"),
+};
+
+function toast(msg) {
+  els.toast.textContent = msg;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => (els.toast.textContent = ""), 2400);
+}
+
+function loadLibrary() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const data = JSON.parse(raw);
+      if (Array.isArray(data)) return data;
+    }
+  } catch (e) {}
+  return structuredClone(DEFAULT_LIBRARY);
+}
+
+function saveLibrary(lib) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(lib));
+}
+
+function sanitizeLibrary(lib) {
+  if (!Array.isArray(lib)) throw new Error("JSON 顶层必须是数组");
+  for (const g of lib) {
+    if (!g || typeof g !== "object") throw new Error("分组必须是对象");
+    if (typeof g.name !== "string") throw new Error("分组缺少 name 字段");
+    if (!Array.isArray(g.keywords)) g.keywords = [];
+    g.keywords = g.keywords
+      .filter(k => k && typeof k.label === "string" && typeof k.value === "string")
+      .map(k => ({ label: k.label, value: k.value }));
+  }
+  return lib;
+}
+
+let library = loadLibrary();
+
+function matchesSearch(group, kw, q) {
+  if (!q) return true;
+  const s = q.toLowerCase();
+  const hay = (group.name + " " + kw.label + " " + kw.value).toLowerCase();
+  return hay.includes(s);
+}
+
+function render() {
+  const q = els.search.value.trim();
+  els.groups.innerHTML = "";
+
+  for (const group of library) {
+    const visible = group.keywords.filter(kw => matchesSearch(group, kw, q));
+    if (q && visible.length === 0) continue;
+
+    const details = document.createElement("details");
+    details.open = !q; // 搜索时默认折叠，避免太长；不搜索时展开由用户控制
+
+    const summary = document.createElement("summary");
+    const row = document.createElement("div");
+    row.className = "summaryRow";
+    const name = document.createElement("div");
+    name.className = "summaryName";
+    name.textContent = group.name;
+    const count = document.createElement("div");
+    count.className = "count";
+    count.textContent = String(visible.length);
+    row.appendChild(name);
+    row.appendChild(count);
+    summary.appendChild(row);
+    details.appendChild(summary);
+
+    const grid = document.createElement("div");
+    grid.className = "kwGrid";
+
+    for (const kw of visible) {
+      const b = document.createElement("button");
+      b.className = "kwBtn";
+      b.textContent = kw.label;
+      b.title = kw.value;
+
+      b.addEventListener("click", () => {
+        const sep = els.toggleNewline.checked ? "\n" : " ";
+        const cur = els.promptBox.value.trimEnd();
+        const next = cur ? (cur + sep + kw.value) : kw.value;
+        els.promptBox.value = next;
+      });
+
+      grid.appendChild(b);
+    }
+
+    details.appendChild(grid);
+    els.groups.appendChild(details);
+  }
+}
+
+async function copyText(text) {
+  // 尽量走 clipboard API；失败就 fallback 到 execCommand
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    try {
+      els.promptBox.focus();
+      els.promptBox.select();
+      const ok = document.execCommand("copy");
+      return ok;
+    } catch (e2) {
+      return false;
+    }
+  }
+}
+
+els.btnCopy.addEventListener("click", async () => {
+  const text = els.promptBox.value;
+  if (!text.trim()) return toast("没有内容可复制");
+  const ok = await copyText(text);
+  toast(ok ? "已复制到剪贴板" : "复制失败：浏览器权限不允许（建议用 http://localhost 打开）");
+});
+
+els.btnClear.addEventListener("click", () => {
+  els.promptBox.value = "";
+  toast("已清空");
+});
+
+els.search.addEventListener("input", render);
+
+els.btnReset.addEventListener("click", () => {
+  library = structuredClone(DEFAULT_LIBRARY);
+  saveLibrary(library);
+  render();
+  toast("已重置为默认库");
+});
+
+els.btnExport.addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(library, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "keywords.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  toast("已导出 keywords.json");
+});
+
+els.fileImport.addEventListener("change", async (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = "";
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const imported = sanitizeLibrary(JSON.parse(text));
+    library = imported;
+    saveLibrary(library);
+    render();
+    toast("导入成功（已保存到本地）");
+  } catch (err) {
+    console.error(err);
+    toast("导入失败：" + (err?.message || String(err)));
+  }
+});
+
+// 首次渲染
+render();

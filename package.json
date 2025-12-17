@@ -1,0 +1,54 @@
+{
+  "name": "cunli-faqiang-prompt-assistant",
+  "version": "1.0.0",
+  "description": "村里发枪了 - 提示词助手（桌面版）",
+  "main": "main.js",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.cunli.faqiang.promptassistant",
+    "productName": "村里发枪了",
+    "asar": true,
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "build/icon.png"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "build/icon.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "build/icon.png"
+    }
+  }
+}
